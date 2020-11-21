@@ -87,7 +87,7 @@ namespace MyBD
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1048, 62);
+            this.panel1.Size = new System.Drawing.Size(1057, 62);
             this.panel1.TabIndex = 5;
             // 
             // panel2
@@ -278,7 +278,7 @@ namespace MyBD
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Maroon;
-            this.ClientSize = new System.Drawing.Size(1048, 616);
+            this.ClientSize = new System.Drawing.Size(1057, 616);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);

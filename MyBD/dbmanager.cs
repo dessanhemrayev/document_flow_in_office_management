@@ -9,7 +9,7 @@ namespace MyBD
 {
     class dbmanager
     {
-        MySqlConnection connection = new MySqlConnection("server=localhost; port=3306;user=root; password=Mysql2020; database=otdel_kadr");
+        MySqlConnection connection = new MySqlConnection("server=localhost; port=33306;user=root; password=; database=otdel_kadr");
 
         public void openConnect()
         {

@@ -54,7 +54,7 @@ namespace MyBD
             // 
             this.login.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.login.Location = new System.Drawing.Point(276, 124);
-            this.login.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.login.Margin = new System.Windows.Forms.Padding(4);
             this.login.Name = "login";
             this.login.Size = new System.Drawing.Size(249, 41);
             this.login.TabIndex = 1;
@@ -63,7 +63,7 @@ namespace MyBD
             // 
             this.password.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.password.Location = new System.Drawing.Point(276, 187);
-            this.password.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.password.Margin = new System.Windows.Forms.Padding(4);
             this.password.Name = "password";
             this.password.Size = new System.Drawing.Size(249, 41);
             this.password.TabIndex = 2;
@@ -110,7 +110,7 @@ namespace MyBD
             this.loginbutton.Font = new System.Drawing.Font("Wide Latin", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.loginbutton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.loginbutton.Location = new System.Drawing.Point(157, 244);
-            this.loginbutton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.loginbutton.Margin = new System.Windows.Forms.Padding(4);
             this.loginbutton.Name = "loginbutton";
             this.loginbutton.Size = new System.Drawing.Size(257, 52);
             this.loginbutton.TabIndex = 6;
@@ -131,12 +131,13 @@ namespace MyBD
             this.Controls.Add(this.password);
             this.Controls.Add(this.login);
             this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximumSize = new System.Drawing.Size(558, 371);
             this.MinimumSize = new System.Drawing.Size(558, 371);
             this.Name = "auth";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Авторизация";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.auth_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

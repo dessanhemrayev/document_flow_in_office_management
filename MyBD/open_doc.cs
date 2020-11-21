@@ -24,7 +24,8 @@ namespace MyBD
         {
             InitializeComponent();
           
-            richTextBox1.Text = docx;
+
+           richTextBox1.Text = docx;
         }
 
         private void печатьToolStripMenuItem_Click(object sender, EventArgs e)

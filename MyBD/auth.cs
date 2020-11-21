@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,12 +39,23 @@ namespace MyBD
                 {
                     class_for_id_user id = new class_for_id_user();
                     id.set_Id(myData[0].ItemArray[0].ToString());
-                    datau DU = new datau();
+                    id.set_AR((myData[0].ItemArray[3]).ToString());
+                    if (Convert.ToInt32(myData[0].ItemArray[3])==2 || Convert.ToInt32(myData[0].ItemArray[3]) == 3)
+                    {
+                        data DU1 = new data();
+                        DU1.Show();
+                    }
+                    else
+                    {
+                        datau DU = new datau();
+                        DU.Show();
+                    }
+                    
 
                     this.Hide();
-
+                    
                     //Показываем форму. В данном конкретном случае все равно как показывать: с помощью метода Show() либо ShowDialog()
-                    DU.Show();
+
 
 
 
@@ -53,10 +66,10 @@ namespace MyBD
                 }
 
             }
-            catch (Exception)
+            catch (Exception err)
             {
-
-                MessageBox.Show("Повторите заново!");
+                MessageBox.Show(err.ToString());
+                //MessageBox.Show("Повторите заново!");
             }
          
         }
@@ -66,6 +79,13 @@ namespace MyBD
             registration register = new registration();
              this.Hide();
             register.Show();
+        }
+    
+       
+
+        private void auth_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }

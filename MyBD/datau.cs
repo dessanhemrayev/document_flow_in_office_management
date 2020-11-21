@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,7 +78,7 @@ namespace MyBD
                 dbmanager db = new dbmanager();
                 DataTable table = new DataTable();
                 MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT  `document`.`type_doc`, (select concat(`info`.`user_name`, ' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`= @id), `document`.`date`, `document`.`id`  FROM `otdel_kadr`.`document` where `document`.`id_to_whom`= @id", db.getConnection());
+                MySqlCommand command = new MySqlCommand("SELECT  `document`.`type_doc`, (select concat(`info`.`user_name`, ' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`=`document`.`id_to_whom`), `document`.`date`, `document`.`id`  FROM `otdel_kadr`.`document` where `document`.`id_to_whom`= @id", db.getConnection());
 
                 command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
                 adapter.SelectCommand = command;
@@ -163,23 +165,89 @@ namespace MyBD
 
         private void dataGridView2_MouseClick(object sender, MouseEventArgs e)
         {
-             fl1 = false;
-             fl2 = true;
-            int k = dataGridView2.CurrentRow.Index;
-            show_doc(k);
-            //MessageBox.Show(k.ToString());
+            try
+            {
+                fl1 = false;
+                fl2 = true;
+                int k = dataGridView2.CurrentRow.Index;
+                show_doc(k);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ничего нету");
+
+            }
+           
+            //
         }
 
         private void dataGridView1_MouseClick(object sender, MouseEventArgs e)
         {
-             fl1 = true;
-             fl2 = false;
-            int k = dataGridView1.CurrentRow.Index;
-            show_doc(k);
-           // MessageBox.Show(k.ToString());
+          
+
+            try
+            {
+                fl1 = true;
+                fl2 = false;
+                int k = dataGridView1.CurrentRow.Index;
+                show_doc(k);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ничего нету");
+
+            }
+
+        }
+        private void preparing_the_script( int id_user)
+        {
+           try
+            {
+                File.Copy(@"D://document_flow_in_office_management//MyBD//scripts//write.py", @"D://document_flow_in_office_management//MyBD//scripts//write2.py");
+                string writePath = @"D://document_flow_in_office_management//MyBD//scripts//write2.py";
+
+                using (StreamWriter sw = new StreamWriter(writePath, true, System.Text.Encoding.UTF8))
+                {
+
+                  
+                    sw.Write("        readBLOB({0})", id_user);
+
+                  
+                }
+                //MessageBox.Show("Запись выполнена");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+
         }
 
-        private void show_doc(int pos)
+        private string getOutput(string pathScript, string command)
+        {
+            ProcessStartInfo info = new ProcessStartInfo(pathScript, command);
+            info.UseShellExecute = false;
+            info.ErrorDialog = false;
+            info.RedirectStandardError = true;
+            info.RedirectStandardInput = true;
+            info.RedirectStandardOutput = true;
+            info.CreateNoWindow = true;
+
+
+            Process p = new Process();
+            p.StartInfo = info;
+
+            bool pStarted = p.Start();
+
+            StreamWriter input = p.StandardInput;
+            StreamReader output = p.StandardOutput;
+            StreamReader error = p.StandardError;
+
+
+            return output.ReadToEnd();
+
+        }
+        private async void show_doc(int pos)
         {
             int id = 0;
             if (fl1)
@@ -194,27 +262,25 @@ namespace MyBD
 
             try
             {
-                dbmanager db = new dbmanager();
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT `document`.`document` FROM `otdel_kadr`.`document` where `document`.`id`= @id", db.getConnection());
+              
 
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = id;
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
+                preparing_the_script(id);
 
-                var myData = table.Select();
+                string str1 = await Task.Run(() => { return 
+                    this.getOutput("C://Users//dessa//AppData//Local//Programs//Python//Python38-32//python.exe", 
+                    "D://document_flow_in_office_management/MyBD/scripts/write2.py"); });
+               
 
-         
-                
-                 
-                    
+                File.Delete(@"D://document_flow_in_office_management//MyBD//scripts//write2.py");
+
+                MessageBox.Show(str1);
 
 
 
 
-                open_doc OD = new open_doc(myData[0].ItemArray[0].ToString());
-                OD.Show();
+
+
+              
             }
             catch (Exception)
             {

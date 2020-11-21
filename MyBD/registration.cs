@@ -48,6 +48,33 @@ namespace MyBD
            
                 return get_id;
         }
+        private bool Add_user_state(int Id_user)
+        {
+            try
+            {
+                String insertQuery = " INSERT INTO `state_user`(`users_id`) VALUES(@users_id)";
+
+                dbmanager db = new dbmanager();
+                db.openConnect();
+                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
+               
+                command.Parameters.Add("@users_id", MySqlDbType.Int32);
+
+                command.Parameters["@users_id"].Value = Id_user;
+
+                if (command.ExecuteNonQuery() == 1)
+                {
+
+                    return true;
+                }
+
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Заполните все поля!");
+            }
+            return false;
+        }
         private bool addUser(string usn,string lstn, int id)
         {
             try
@@ -84,36 +111,45 @@ namespace MyBD
             string user_last_name = sname.Text;
             string user_login = login.Text;
             string user_password = password.Text;
-            try
+            if (user_login.Length > 0 && user_last_name.Length > 0 && user_password.Length > 0 && user_name.Length > 0)
             {
-                String insertQuery = " INSERT INTO `otdel_kadr`.`users` (`user_login`,`user_password`) VALUES(@user_login, @user_password)";
-                
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-               
-                command.Parameters.Add("@user_login", MySqlDbType.VarChar);
-                command.Parameters.Add("@user_password", MySqlDbType.VarChar);
-
-                
-                command.Parameters["@user_login"].Value = user_login;
-                command.Parameters["@user_password"].Value = user_password;
-                if (command.ExecuteNonQuery() == 1)
+                try
                 {
-                    if (addUser(user_name, user_last_name,auth_user(user_login,user_password)))
-                    {
-                        MessageBox.Show("Регистрация прошла успешно!!!");
-                        auth DU = new auth();
-                        DU.Show();
+                    String insertQuery = " INSERT INTO `otdel_kadr`.`users` (`user_login`,`user_password`) VALUES(@user_login, @user_password)";
 
-                        db.closeConnect();
-                        this.Hide();
+                    dbmanager db = new dbmanager();
+                    db.openConnect();
+                    MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
+
+                    command.Parameters.Add("@user_login", MySqlDbType.VarChar);
+                    command.Parameters.Add("@user_password", MySqlDbType.VarChar);
+
+
+                    command.Parameters["@user_login"].Value = user_login;
+                    command.Parameters["@user_password"].Value = user_password;
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+                        int tmp = auth_user(user_login, user_password);
+                        if (addUser(user_name, user_last_name, tmp) && Add_user_state(tmp))
+                        {
+                            MessageBox.Show("Регистрация прошла успешно!!!");
+                            auth DU = new auth();
+                            DU.Show();
+
+                            db.closeConnect();
+                            this.Hide();
+                        }
                     }
                 }
+                catch (Exception err)
+                {//"Заполните все поля!"
+                    MessageBox.Show(err.ToString());
+                    MessageBox.Show("Проверьте данные!");
+                }
             }
-            catch (Exception )
-            {//"Заполните все поля!"
-                MessageBox.Show("Заполните все поля!");
+            else
+            {
+              MessageBox.Show("Заполните все поля!");
             }
 
         }

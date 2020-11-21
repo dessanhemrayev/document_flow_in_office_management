@@ -9,6 +9,7 @@ namespace MyBD
     class class_for_id_user
     {
         static private string id_user;
+        static private string acces_right;
         static private string buffer;
        
         public void set_doc(string doc)
@@ -30,8 +31,20 @@ namespace MyBD
         {
             return id_user;
         }
+        public void set_AR(string ar)
+        {
 
-     
+            acces_right = ar;
+
+        }
+
+
+        public string get_AR()
+        {
+            return acces_right;
+        }
+
+
 
 
 
