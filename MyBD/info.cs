@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -23,30 +24,37 @@ namespace MyBD
         {
             update_d();
         }
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
+        [Obsolete]
         private void update_d()
         {
             try
             {
-                dbmanager db = new dbmanager();
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT `info`.`user_name`,  `info`.`surname`,   `info`.`birthday`,    `info`.`phone`,    `info`.`email` FROM `otdel_kadr`.`info` where `info`.`users_id`= @id", db.getConnection());
+                using (SqlConnection cn = getConnection())
+                {
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT [user_name],  [info].[surname],   [info].[birthday],   [info].[phone],   [info].[email] FROM info where [info].[users_id]=@id", cn);
 
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(id.get_idUser());
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
+                    command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(id.get_idUser());
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
 
-                var myData = table.Select();
+                    var myData = table.Select();
 
-                label10.Text = myData[0].ItemArray[0].ToString().Trim();
-                label9.Text = myData[0].ItemArray[1].ToString().Trim();
-                label8.Text = myData[0].ItemArray[2].ToString().Trim();
-                label7.Text = myData[0].ItemArray[3].ToString().Trim();
-                label6.Text = myData[0].ItemArray[4].ToString().Trim();
-
-
+                    label10.Text = myData[0].ItemArray[0].ToString().Trim();
+                    label9.Text = myData[0].ItemArray[1].ToString().Trim();
+                    label8.Text = myData[0].ItemArray[2].ToString().Trim();
+                    label7.Text = myData[0].ItemArray[3].ToString().Trim();
+                    label6.Text = myData[0].ItemArray[4].ToString().Trim();
 
 
+
+
+                }
             }
             catch (Exception)
             {

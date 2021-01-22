@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -17,26 +18,34 @@ namespace MyBD
         {
             InitializeComponent();
         }
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
+        [Obsolete]
         private int auth_user(string login, string password)
        {
             int get_id = 0;
             try
             {
-                dbmanager db = new dbmanager();
-
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT * FROM users where user_login = @login AND user_password=@password ", db.getConnection());
-                command.Parameters.Add("@login", MySqlDbType.VarChar).Value = login;
-                command.Parameters.Add("@password", MySqlDbType.VarChar).Value = password;
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-                var myData = table.Select();
-
-                if (table.Rows.Count == 1)
+                using (SqlConnection cn = getConnection())
                 {
 
-                  get_id=Convert.ToInt32(myData[0].ItemArray[0].ToString());
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT * FROM users where user_login = @login AND user_password=@password ",cn);
+                    command.Parameters.Add("@login", SqlDbType.VarChar).Value = login;
+                    command.Parameters.Add("@password", SqlDbType.VarChar).Value = password;
+                    cn.Open();
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+                    var myData = table.Select();
+
+                    if (table.Rows.Count == 1)
+                    {
+
+                        get_id = Convert.ToInt32(myData[0].ItemArray[0].ToString());
+                    }
                 }
             }
             catch (Exception)
@@ -48,26 +57,30 @@ namespace MyBD
            
                 return get_id;
         }
+
+        [Obsolete]
         private bool Add_user_state(int Id_user)
         {
             try
             {
-                String insertQuery = " INSERT INTO `state_user`(`users_id`) VALUES(@users_id)";
+                String insertQuery = " INSERT INTO state_user(users_id) VALUES(@users_id)";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-               
-                command.Parameters.Add("@users_id", MySqlDbType.Int32);
-
-                command.Parameters["@users_id"].Value = Id_user;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
 
-                    return true;
-                }
+                   
+                    SqlCommand command = new SqlCommand(insertQuery,cn);
 
+                    command.Parameters.Add("@users_id", SqlDbType.Int);
+
+                    command.Parameters["@users_id"].Value = Id_user;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+                }
             }
             catch (Exception)
             {
@@ -75,29 +88,32 @@ namespace MyBD
             }
             return false;
         }
+
+        [Obsolete]
         private bool addUser(string usn,string lstn, int id)
         {
             try
             {
-                String insertQuery = " INSERT INTO `otdel_kadr`.`info` (`user_name`,`surname`,`users_id`) VALUES(@user_name, @surname,@users_id)";
+                String insertQuery = " INSERT INTO info (user_name,surname,users_id) VALUES(@user_name, @surname,@users_id)";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-                command.Parameters.Add("@user_name", MySqlDbType.VarChar);
-                command.Parameters.Add("@surname", MySqlDbType.VarChar);
-                command.Parameters.Add("@users_id", MySqlDbType.Int32);
-
-                command.Parameters["@user_name"].Value = usn;
-                command.Parameters["@surname"].Value = lstn;
-                command.Parameters["@users_id"].Value = id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
 
-                    return true;
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
+                    command.Parameters.Add("@user_name", SqlDbType.VarChar);
+                    command.Parameters.Add("@surname", SqlDbType.VarChar);
+                    command.Parameters.Add("@users_id", SqlDbType.Int);
+
+                    command.Parameters["@user_name"].Value = usn;
+                    command.Parameters["@surname"].Value = lstn;
+                    command.Parameters["@users_id"].Value = id;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
                 }
-               
             }
             catch(Exception)
             {
@@ -105,6 +121,8 @@ namespace MyBD
             }
             return false;
         }
+
+        [Obsolete]
         private void regbutton_Click(object sender, EventArgs e)
         {
             string user_name = name.Text;
@@ -115,29 +133,32 @@ namespace MyBD
             {
                 try
                 {
-                    String insertQuery = " INSERT INTO `otdel_kadr`.`users` (`user_login`,`user_password`) VALUES(@user_login, @user_password)";
+                    String insertQuery = " INSERT INTO users (user_login,user_password) VALUES(@user_login, @user_password)";
 
-                    dbmanager db = new dbmanager();
-                    db.openConnect();
-                    MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-                    command.Parameters.Add("@user_login", MySqlDbType.VarChar);
-                    command.Parameters.Add("@user_password", MySqlDbType.VarChar);
-
-
-                    command.Parameters["@user_login"].Value = user_login;
-                    command.Parameters["@user_password"].Value = user_password;
-                    if (command.ExecuteNonQuery() == 1)
+                    using (SqlConnection cn = getConnection())
                     {
-                        int tmp = auth_user(user_login, user_password);
-                        if (addUser(user_name, user_last_name, tmp) && Add_user_state(tmp))
-                        {
-                            MessageBox.Show("Регистрация прошла успешно!!!");
-                            auth DU = new auth();
-                            DU.Show();
 
-                            db.closeConnect();
-                            this.Hide();
+                        SqlCommand command = new SqlCommand(insertQuery, cn);
+
+                        command.Parameters.Add("@user_login", SqlDbType.VarChar);
+                        command.Parameters.Add("@user_password", SqlDbType.VarChar);
+
+
+                        command.Parameters["@user_login"].Value = user_login;
+                        command.Parameters["@user_password"].Value = user_password;
+                        cn.Open();
+                        if (command.ExecuteNonQuery() == 1)
+                        {
+                            int tmp = auth_user(user_login, user_password);
+                            if (addUser(user_name, user_last_name, tmp) && Add_user_state(tmp))
+                            {
+                                MessageBox.Show("Регистрация прошла успешно!!!");
+                                auth DU = new auth();
+                                DU.Show();
+
+
+                                this.Hide();
+                            }
                         }
                     }
                 }

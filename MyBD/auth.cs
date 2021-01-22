@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -19,52 +20,58 @@ namespace MyBD
         {
             InitializeComponent();
         }
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
 
+        [Obsolete]
         private void loginbutton_Click(object sender, EventArgs e)
         {
             try
             {
-                dbmanager db = new dbmanager();
-
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT * FROM users where user_login = @login AND user_password=@password ", db.getConnection());
-                command.Parameters.Add("@login", MySqlDbType.VarChar).Value = login.Text;
-                command.Parameters.Add("@password", MySqlDbType.VarChar).Value = password.Text;
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-                var myData = table.Select();
-
-                if (table.Rows.Count == 1)
+                using (SqlConnection cn = getConnection())
                 {
-                    class_for_id_user id = new class_for_id_user();
-                    id.set_Id(myData[0].ItemArray[0].ToString());
-                    id.set_AR((myData[0].ItemArray[3]).ToString());
-                    if (Convert.ToInt32(myData[0].ItemArray[3])==2 || Convert.ToInt32(myData[0].ItemArray[3]) == 3)
+
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT * FROM users where user_login = @login AND user_password=@password ", cn);
+                    command.Parameters.Add("@login", MySqlDbType.VarChar).Value = login.Text;
+                    command.Parameters.Add("@password", MySqlDbType.VarChar).Value = password.Text;
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+                    var myData = table.Select();
+
+                    if (table.Rows.Count == 1)
                     {
-                        data DU1 = new data();
-                        DU1.Show();
+                        class_for_id_user id = new class_for_id_user();
+                        id.set_Id(myData[0].ItemArray[0].ToString());
+                        id.set_AR((myData[0].ItemArray[3]).ToString());
+                        if (Convert.ToInt32(myData[0].ItemArray[3]) == 2 || Convert.ToInt32(myData[0].ItemArray[3]) == 3)
+                        {
+                            data DU1 = new data();
+                            DU1.Show();
+                        }
+                        else
+                        {
+                            datau DU = new datau();
+                            DU.Show();
+                        }
+
+
+                        this.Hide();
+
+                        //Показываем форму. В данном конкретном случае все равно как показывать: с помощью метода Show() либо ShowDialog()
+
+
+
+
                     }
                     else
                     {
-                        datau DU = new datau();
-                        DU.Show();
+                        MessageBox.Show("Повторите заново!");
                     }
-                    
-
-                    this.Hide();
-                    
-                    //Показываем форму. В данном конкретном случае все равно как показывать: с помощью метода Show() либо ShowDialog()
-
-
-
-
                 }
-                else
-                {
-                    MessageBox.Show("Повторите заново!");
-                }
-
             }
             catch (Exception err)
             {

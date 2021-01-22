@@ -78,7 +78,6 @@
     <Compile Include="datau.Designer.cs">
       <DependentUpon>datau.cs</DependentUpon>
     </Compile>
-    <Compile Include="dbmanager.cs" />
     <Compile Include="Edit.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -103,6 +102,11 @@
     </Compile>
     <Compile Include="open_doc.Designer.cs">
       <DependentUpon>open_doc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="otdel_kadrDataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>otdel_kadrDataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -154,6 +158,17 @@
     <EmbeddedResource Include="send_doc.resx">
       <DependentUpon>send_doc.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="otdel_kadrDataSet.xsc">
+      <DependentUpon>otdel_kadrDataSet.xsd</DependentUpon>
+    </None>
+    <None Include="otdel_kadrDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>otdel_kadrDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="otdel_kadrDataSet.xss">
+      <DependentUpon>otdel_kadrDataSet.xsd</DependentUpon>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

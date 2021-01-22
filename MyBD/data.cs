@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
+using System.Data.SqlClient;
 
 namespace MyBD
 {
@@ -56,39 +57,45 @@ namespace MyBD
             get_users_for_access_right();
             
         }
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
 
-       private void get_info_users()
+        private void get_info_users()
         {
             dataGridView1.Rows.Clear();
             try
             {
                 delete_users_id.Clear();
-                dbmanager db = new dbmanager();
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT  `info`.`users_id`,`user_name`, `surname`, `birthday`, `phone`, `email`,`dep_name`, `pos_name`, `state_user` FROM `info`,`positions`,`departments`, `state_user` WHERE `info`.`positions_id`=`positions`.`id` AND `positions`.`departments_id`=`departments`.`id` AND `info`.`users_id`=`state_user`.`users_id`", db.getConnection());
-
-                //command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-             
-                var myData = table.Select();
-
-                for (int i = 0; i < myData.Length; i++)
+                using (SqlConnection cn = getConnection())
                 {
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT DISTINCT [info].[users_id],user_name, surname, birthday, phone, email,dep_name, pos_name, state_user FROM info,positions,departments, state_user WHERE [info].[positions_id]=[positions].[id] AND [positions].[departments_id]=[departments].[id] AND [info].[users_id]=[state_user].[users_id]", cn);
 
-                    string[] birthday = myData[i].ItemArray[3].ToString().Trim().Split(' ');
-                    dataGridView1.Rows.Add(i + 1, myData[i].ItemArray[1].ToString().Trim(),
-                                                  myData[i].ItemArray[2].ToString().Trim(),
-                                                  birthday[0], 
-                                                  myData[i].ItemArray[4].ToString().Trim(), 
-                                                  myData[i].ItemArray[5].ToString().Trim(),
-                                                  myData[i].ItemArray[6].ToString().Trim(),
-                                                  myData[i].ItemArray[7].ToString().Trim(),
-                                                  myData[i].ItemArray[8].ToString().Trim());
-                    delete_users_id.Add(Convert.ToInt32(myData[i].ItemArray[0].ToString()));
+                    //command.Parameters.Add("@id", SqlDbType.Int).Value = Convert.ToInt32(idlik.get_idUser());
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
 
-            }
+                    var myData = table.Select();
+
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+
+                        string[] birthday = myData[i].ItemArray[3].ToString().Trim().Split(' ');
+                        dataGridView1.Rows.Add(i + 1, myData[i].ItemArray[1].ToString().Trim(),
+                                                      myData[i].ItemArray[2].ToString().Trim(),
+                                                      birthday[0],
+                                                      myData[i].ItemArray[4].ToString().Trim(),
+                                                      myData[i].ItemArray[5].ToString().Trim(),
+                                                      myData[i].ItemArray[6].ToString().Trim(),
+                                                      myData[i].ItemArray[7].ToString().Trim(),
+                                                      myData[i].ItemArray[8].ToString().Trim());
+                        delete_users_id.Add(Convert.ToInt32(myData[i].ItemArray[0].ToString()));
+
+                    }
+                }
             }
             catch (Exception err)
             {
@@ -122,24 +129,26 @@ namespace MyBD
             improves.Clear();
             try
             {
-                dbmanager db = new dbmanager();
-                System.Data.DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT  `document`.`type_doc`, (select concat(`info`.`user_name`, ' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`=`document`.`id_to_whom`), `document`.`date`, `document`.`id`  FROM `otdel_kadr`.`document` where `document`.`id_to_whom`= @id", db.getConnection());
-
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-                
-                var myData = table.Select();
-
-                for (int i = 0; i < myData.Length; i++)
+                using (SqlConnection cn = getConnection())
                 {
-                    dataGridView2.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
-                    improves.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
+                    System.Data.DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT DISTINCT [document].[type_doc], (select concat([info].[user_name], ' ',[info].[surname])  from [info] where [info].[users_id]=[document].[id_to_whom]), [document].[date], [document].[id]  FROM document where [document].[id_to_whom]=@id", cn);
+
+                    command.Parameters.Add("@id", SqlDbType.Int).Value = Convert.ToInt32(idlik.get_idUser());
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+
+                    var myData = table.Select();
+
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+                        dataGridView2.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
+                        improves.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
+
+                    }
 
                 }
-
             }
             catch (Exception)
             {
@@ -158,24 +167,27 @@ namespace MyBD
 
             try
             {
-                dbmanager db = new dbmanager();
-                System.Data.DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT id, name_doc, (select concat(`info`.`user_name`, ' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`=`prikazy`.`users_id`), date FROM `prikazy` ", db.getConnection());
-
-              
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-
-                var myData = table.Select();
-
-                for (int i = 0; i < myData.Length; i++)
+                using (SqlConnection cn = getConnection())
                 {
-                    dataGridView3.Rows.Add(i + 1, myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim(), myData[i].ItemArray[3].ToString().Trim());
-                    prikazy_id.Add(Convert.ToInt32(myData[i].ItemArray[0].ToString()));
+
+                    System.Data.DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT DISTINCT id, name_doc, (select concat([info].[user_name], ' ',[info].[surname])  from info where [info].[users_id]=[prikazy].[users_id]), date FROM [prikazy] ", cn);
+
+
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+
+                    var myData = table.Select();
+
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+                        dataGridView3.Rows.Add(i + 1, myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim(), myData[i].ItemArray[3].ToString().Trim());
+                        prikazy_id.Add(Convert.ToInt32(myData[i].ItemArray[0].ToString()));
+
+                    }
 
                 }
-
             }
             catch (Exception err)
             {
@@ -299,31 +311,34 @@ namespace MyBD
             Application.Exit();
         }
 
+        [Obsolete]
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
             comboBox4.Items.Clear();
-            dbmanager db = new dbmanager();
-
-            DataTable table = new DataTable();
-
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-
-            MySqlCommand command = new MySqlCommand("SELECT id,pos_name FROM `positions` WHERE `positions`.`departments_id`=@id_pos", db.getConnection());
-            command.Parameters.Add("@id_pos", MySqlDbType.Int32).Value = comboBox3.SelectedIndex+1;
-
-            adapter.SelectCommand = command;
-            adapter.Fill(table);
-            var myData = table.Select();
-
-            for (int i = 0; i < myData.Length; i++)
+            using (SqlConnection cn = getConnection())
             {
 
-                comboBox4.Items.Add(myData[i].ItemArray[1]);
-                pos_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+                DataTable table = new DataTable();
 
+                SqlDataAdapter adapter = new SqlDataAdapter();
+
+                SqlCommand command = new SqlCommand("SELECT DISTINCT id,pos_name FROM positions WHERE [positions].[departments_id]=@id_pos", cn);
+                command.Parameters.Add("@id_pos", SqlDbType.Int).Value = comboBox3.SelectedIndex + 1;
+
+
+                adapter.SelectCommand = command;
+                adapter.Fill(table);
+                var myData = table.Select();
+
+                for (int i = 0; i < myData.Length; i++)
+                {
+
+                    comboBox4.Items.Add(myData[i].ItemArray[1]);
+                    pos_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+
+                }
             }
         }
-
         public static Word.Application app = new Word.Application();
         string path_to_doc = "D:\\document_flow_in_office_management\\MyBD\\forma_prikaza\\";
         static string path_to_doc2 = "D:\\document_flow_in_office_management\\MyBD\\forma_prikaza\\12.rtf";
@@ -388,56 +403,59 @@ namespace MyBD
         {
             for_users_id.Clear();
             comboBox2.Items.Clear();
-            dbmanager db = new dbmanager();
-
-            DataTable table = new DataTable();
-
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-
-            MySqlCommand command = new MySqlCommand("SELECT `info`.`users_id`,concat( `info`.`user_name` ,' ',`info`.`surname`)  FROM `otdel_kadr`.`info`,`otdel_kadr`.`state_user` WHERE `state_user`.`state_user`='Гость' and  `info`.`users_id`=`state_user`.`users_id`", db.getConnection());
-
-
-
-            adapter.SelectCommand = command;
-            adapter.Fill(table);
-            var myData = table.Select();
-
-            for (int i = 0; i < myData.Length; i++)
+            using (SqlConnection cn = getConnection())
             {
 
-                comboBox2.Items.Add(myData[i].ItemArray[1]);
-                for_users_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
 
+                DataTable table = new DataTable();
+
+                SqlDataAdapter adapter = new SqlDataAdapter();
+
+                SqlCommand command = new SqlCommand("SELECT DISTINCT [info].[users_id],concat( [info].[user_name] ,' ',[info].[surname])  FROM [info],[state_user] WHERE [state_user].[state_user]='Гость' and  [info].[users_id]=[state_user].[users_id]", cn);
+
+
+
+                adapter.SelectCommand = command;
+                adapter.Fill(table);
+                var myData = table.Select();
+
+                for (int i = 0; i < myData.Length; i++)
+                {
+
+                    comboBox2.Items.Add(myData[i].ItemArray[1]);
+                    for_users_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+
+                }
             }
-            db.closeConnect();
         }
        
         private void get_deparments()
         {
             comboBox3.Items.Clear();
             comboBox6.Items.Clear();
-            dbmanager db = new dbmanager();
+            using (SqlConnection cn = getConnection())
 
-            DataTable table = new DataTable();
-
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-
-            MySqlCommand command = new MySqlCommand("SELECT * FROM `departments` ", db.getConnection());
-
-
-
-            adapter.SelectCommand = command;
-            adapter.Fill(table);
-            var myData = table.Select();
-
-            for (int i = 0; i < myData.Length; i++)
             {
+                DataTable table = new DataTable();
 
-                comboBox3.Items.Add(myData[i].ItemArray[1]);
-                comboBox6.Items.Add(myData[i].ItemArray[1]);
-                dep_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+                SqlDataAdapter adapter = new SqlDataAdapter();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM departments ", cn);
+
+
+
+                adapter.SelectCommand = command;
+                adapter.Fill(table);
+                var myData = table.Select();
+
+                for (int i = 0; i < myData.Length; i++)
+                {
+
+                    comboBox3.Items.Add(myData[i].ItemArray[1]);
+                    comboBox6.Items.Add(myData[i].ItemArray[1]);
+                    dep_id.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+                }
             }
-            db.closeConnect();
         }
 
         private void preparing_the_script(string name_doc, string doc_file, string date, int id_user)
@@ -515,27 +533,28 @@ namespace MyBD
 
         }
 
-
+        [Obsolete]
         private bool Update_user_state(int Id_user)
         {
             try
             {
-                String insertQuery = " UPDATE `state_user` SET `state_user`='Сотрудник'  WHERE users_id=@id_user";
+                String insertQuery = " UPDATE state_user SET state_user='Сотрудник'  WHERE users_id=@id_user";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-                command.Parameters.Add("@id_user", MySqlDbType.Int32);
-
-                command.Parameters["@id_user"].Value = Id_user;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+                    command.Parameters.Add("@id_user", SqlDbType.Int);
+
+                    command.Parameters["@id_user"].Value = Id_user;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -549,23 +568,23 @@ namespace MyBD
         {
             try
             {
-                String insertQuery = " UPDATE `info` SET `info`.`positions_id`=@pos_id WHERE  users_id=@id_user";
+                String insertQuery = " UPDATE info SET positions_id=@pos_id WHERE  users_id=@id_user";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-                command.Parameters.Add("@pos_id", MySqlDbType.Int32);
-                command.Parameters.Add("@id_user", MySqlDbType.Int32);
-
-                command.Parameters["@pos_id"].Value = pos_id[comboBox4.SelectedIndex];
-                command.Parameters["@id_user"].Value = Id_user;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
+                    command.Parameters.Add("@pos_id", SqlDbType.Int);
+                    command.Parameters.Add("@id_user", SqlDbType.Int);
 
-                    return true;
+                    command.Parameters["@pos_id"].Value = pos_id[comboBox4.SelectedIndex];
+                    command.Parameters["@id_user"].Value = Id_user;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
                 }
-
             }
             catch (Exception err)
             {
@@ -598,22 +617,23 @@ namespace MyBD
         {
             try
             {
-                String insertQuery = " UPDATE `users` SET `access right`=2 WHERE id=@id_user";
+                String insertQuery = " UPDATE users SET [access right]=2 WHERE id=@id_user";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-                command.Parameters.Add("@id_user", MySqlDbType.Int32);
-
-                command.Parameters["@id_user"].Value = Id_user;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+                    command.Parameters.Add("@id_user", SqlDbType.Int);
+
+                    command.Parameters["@id_user"].Value = Id_user;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -626,24 +646,25 @@ namespace MyBD
         {
             access_right_users.Clear();
             comboBox5.Items.Clear();
-            dbmanager db = new dbmanager();
-
-            DataTable table = new DataTable();
-
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-
-            MySqlCommand command = new MySqlCommand("SELECT `users`.`id`, concat(`info`.`user_name`,' ',`info`.`surname`) FROM `info`, `users` WHERE `users`.`id`=`info`.`users_id` AND `users`.`access right`=1", db.getConnection());
-          
-            adapter.SelectCommand = command;
-            adapter.Fill(table);
-            var myData = table.Select();
-
-            for (int i = 0; i < myData.Length; i++)
+            using (SqlConnection cn = getConnection())
             {
+                DataTable table = new DataTable();
 
-                comboBox5.Items.Add(myData[i].ItemArray[1]);
-                access_right_users.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+                SqlDataAdapter adapter = new SqlDataAdapter();
 
+                SqlCommand command = new SqlCommand("SELECT DISTINCT [users].[id], concat([info].[user_name],' ',[info].[surname]) FROM info, users WHERE [users].[id]=[info].[users_id] AND [users].[access right]=1", cn);
+
+                adapter.SelectCommand = command;
+                adapter.Fill(table);
+                var myData = table.Select();
+
+                for (int i = 0; i < myData.Length; i++)
+                {
+
+                    comboBox5.Items.Add(myData[i].ItemArray[1]);
+                    access_right_users.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+
+                }
             }
         }
 
@@ -659,22 +680,23 @@ namespace MyBD
         {
             try
             {
-                String insertQuery = " INSERT INTO `departments`(`dep_name`) VALUES(@dep_name)";
+                String insertQuery = " INSERT INTO departments(dep_name) VALUES(@dep_name)";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-                command.Parameters.Add("@dep_name", MySqlDbType.VarChar);
-
-                command.Parameters["@dep_name"].Value = textBox9.Text;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    MessageBox.Show("Отдел успешно добавлен!");
+                    command.Parameters.Add("@dep_name", SqlDbType.VarChar);
+
+                    command.Parameters["@dep_name"].Value = textBox9.Text;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        MessageBox.Show("Отдел успешно добавлен!");
+                    }
+
                 }
-
             }
             catch (Exception)
             {
@@ -697,24 +719,25 @@ namespace MyBD
         {
             try
             {
-                String insertQuery = " INSERT INTO `positions`( `pos_name`, `departments_id`) VALUES(@pos_name,@d_id)";
+                String insertQuery = " INSERT INTO positions( pos_name, departments_id) VALUES(@pos_name,@d_id)";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-                command.Parameters.Add("@pos_name", MySqlDbType.VarChar);
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-                command.Parameters["@pos_name"].Value = textBox10.Text;
-                command.Parameters["@d_id"].Value = dep_id[comboBox6.SelectedIndex];
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    MessageBox.Show("Должность успешно добавлен!");
+                    command.Parameters.Add("@pos_name", SqlDbType.VarChar);
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+
+                    command.Parameters["@pos_name"].Value = textBox10.Text;
+                    command.Parameters["@d_id"].Value = dep_id[comboBox6.SelectedIndex];
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        MessageBox.Show("Должность успешно добавлен!");
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -751,29 +774,30 @@ namespace MyBD
         private bool _delete_user(int id) {
             try
             {
-                String insertQuery = " DELETE FROM `users` WHERE `id`=@d_id";
+                String insertQuery = " DELETE FROM users WHERE id=@d_id";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-              
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-                
-                command.Parameters["@d_id"].Value =id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+
+
+                    command.Parameters["@d_id"].Value = id;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
                 MessageBox.Show(err.ToString());
-               
+
             }
 
 
@@ -784,24 +808,25 @@ namespace MyBD
 
             try
             {
-                String insertQuery = " DELETE FROM `state_user` WHERE `users_id`=@d_id";
+                String insertQuery = " DELETE FROM state_user WHERE users_id=@d_id";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-
-                command.Parameters["@d_id"].Value = id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+
+
+                    command.Parameters["@d_id"].Value = id;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -818,24 +843,26 @@ namespace MyBD
         private bool _delete_user_prikazs(int id) {
             try
             {
-                String insertQuery = " DELETE FROM `prikazy` WHERE `users_id`=@d_id";
+                String insertQuery = " DELETE FROM prikazy WHERE users_id=@d_id";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-
-                command.Parameters["@d_id"].Value = id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+
+
+                    command.Parameters["@d_id"].Value = id;
+
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -851,24 +878,25 @@ namespace MyBD
 
             try
             {
-                String insertQuery = "DELETE FROM `info` WHERE `users_id`=@d_id";
+                String insertQuery = "DELETE FROM info WHERE users_id=@d_id";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-
-                command.Parameters["@d_id"].Value = id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+
+
+                    command.Parameters["@d_id"].Value = id;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -890,24 +918,23 @@ namespace MyBD
 
             try
             {
-                String insertQuery = " DELETE FROM `document` WHERE `users_id`=@d_id";
+                String insertQuery = " DELETE FROM document WHERE users_id=@d_id";
 
-                dbmanager db = new dbmanager();
-                db.openConnect();
-                MySqlCommand command = new MySqlCommand(insertQuery, db.getConnection());
-
-
-                command.Parameters.Add("@d_id", MySqlDbType.Int32);
-
-
-                command.Parameters["@d_id"].Value = id;
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
+                    SqlCommand command = new SqlCommand(insertQuery, cn);
 
-                    return true;
+
+                    command.Parameters.Add("@d_id", SqlDbType.Int);
+                    command.Parameters["@d_id"].Value = id;
+                    cn.Open();
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        return true;
+                    }
+
                 }
-
             }
             catch (Exception err)
             {
@@ -921,71 +948,77 @@ namespace MyBD
 
         }
 
+        [Obsolete]
         private void find_users(string find_user, string find_sname,string state)
         {
             dataGridView4.Rows.Clear();
-            dbmanager db = new dbmanager();
-            DataTable table = new DataTable();
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-            try
+            using (SqlConnection cn = getConnection())
             {
-                string query = "";
-                if (find_user.Length>0&&find_sname.Length>0&&state.Length>0)
+                DataTable table = new DataTable();
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                try
                 {
-                    query = "SELECT `user_name`, `surname`, `birthday`, `phone`, `email`, `pos_name` as `positions`, `dep_name` AS `departments`,`state_user` AS `state_user` FROM `info` LEFT JOIN `positions` ON `positions`.`id` = `info`.`positions_id` LEFT JOIN `departments` ON `departments`.`id` = `positions`.`departments_id` LEFT JOIN `state_user` ON `state_user`.`users_id` = `info`.`users_id` where `state_user`.`state_user`=@state and `info`.`user_name`=@uname and `info`.`surname`=@fsname";
+                    string query = "";
+                    if (find_user.Length > 0 && find_sname.Length > 0 && state.Length > 0)
+                    {
+                        query = "SELECT DISTINCT user_name, surname, birthday, phone, email, pos_name as positions, dep_name AS departments,state_user AS state_user FROM info LEFT JOIN positions ON positions.id = info.positions_id LEFT JOIN departments ON departments.id = positions.departments_id LEFT JOIN state_user ON state_user.users_id = info.users_id where state_user.state_user=@state and info.user_name=@uname and info.surname=@fsname";
 
+                    }
+                    else if (find_user.Length > 0 && find_sname.Length > 0 || state.Length > 0)
+                    {
+                        query = "SELECT DISTINCT user_name, surname, birthday, phone, email, pos_name as positions, dep_name AS departments,state_user AS state_user FROM info LEFT JOIN positions ON positions.id = info.positions_id LEFT JOIN departments ON departments.id = positions.departments_id LEFT JOIN state_user ON state_user.users_id = info.users_id where state_user.state_user=@state and info.user_name=@uname or info.surname=@fsname";
+
+                    }
+                    else
+                    if (find_user.Length > 0 || find_sname.Length > 0 && state.Length > 0)
+                    {
+                        query = "SELECT  DISTINCT user_name, surname, birthday, phone, email, pos_name as positions, dep_name AS departments,state_user AS state_user FROM info LEFT JOIN positions ON positions.id = info.positions_id LEFT JOIN departments ON departments.id = positions.departments_id LEFT JOIN state_user ON state_user.users_id = info.users_id where state_user.state_user=@state or info.user_name=@uname and info.surname=@fsname";
+
+                    }
+                    else
+                    {
+                        query = "SELECT DISTINCT user_name, surname, birthday, phone, email, pos_name as positions, dep_name AS departments,state_user AS state_user FROM info LEFT JOIN positions ON positions.id = info.positions_id LEFT JOIN departments ON departments.id = positions.departments_id LEFT JOIN state_user ON state_user.users_id = info.users_id where state_user.state_user=@state or info.user_name=@uname or info.surname=@fsname";
+
+                    }
+
+
+                    SqlCommand command = new SqlCommand(query, cn);
+                    command.Parameters.Add("@state", SqlDbType.VarChar).Value = state;
+                    command.Parameters.Add("@uname", SqlDbType.VarChar).Value = find_user;
+                    command.Parameters.Add("@fsname", SqlDbType.VarChar).Value = find_sname;
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+
+                    var myData = table.Select();
+                    if (myData.Length == 0)
+                    {
+                        MessageBox.Show("По вашему запросу ничего не найдено!!!");
+                    }
+
+
+
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+                        string[] birthday = myData[i].ItemArray[3].ToString().Trim().Split(' ');
+                        dataGridView4.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(),
+                                                      myData[i].ItemArray[1].ToString().Trim(),
+                                                      birthday[0],
+                                                      myData[i].ItemArray[3].ToString().Trim(),
+                                                      myData[i].ItemArray[4].ToString().Trim(),
+                                                      myData[i].ItemArray[5].ToString().Trim(),
+                                                      myData[i].ItemArray[6].ToString().Trim(),
+                                                      myData[i].ItemArray[7].ToString().Trim());
+
+
+                    }
                 }
-                else if (find_user.Length > 0 && find_sname.Length > 0 || state.Length > 0)
-                {
-                    query = "SELECT `user_name`, `surname`, `birthday`, `phone`, `email`, `pos_name` as `positions`, `dep_name` AS `departments`,`state_user` AS `state_user` FROM `info` LEFT JOIN `positions` ON `positions`.`id` = `info`.`positions_id` LEFT JOIN `departments` ON `departments`.`id` = `positions`.`departments_id` LEFT JOIN `state_user` ON `state_user`.`users_id` = `info`.`users_id` where `state_user`.`state_user`=@state and `info`.`user_name`=@uname or `info`.`surname`=@fsname";
 
-                }else
-                if (find_user.Length > 0 || find_sname.Length > 0 && state.Length > 0)
-                {
-                    query = "SELECT `user_name`, `surname`, `birthday`, `phone`, `email`, `pos_name` as `positions`, `dep_name` AS `departments`,`state_user` AS `state_user` FROM `info` LEFT JOIN `positions` ON `positions`.`id` = `info`.`positions_id` LEFT JOIN `departments` ON `departments`.`id` = `positions`.`departments_id` LEFT JOIN `state_user` ON `state_user`.`users_id` = `info`.`users_id` where `state_user`.`state_user`=@state or `info`.`user_name`=@uname and `info`.`surname`=@fsname";
 
+                catch (Exception err)
+                {
+                    MessageBox.Show(err.ToString());
+                    //           MessageBox.Show("Ошибка при загрузке данных!");
                 }
-                else
-                {
-                    query = "SELECT `user_name`, `surname`, `birthday`, `phone`, `email`, `pos_name` as `positions`, `dep_name` AS `departments`,`state_user` AS `state_user` FROM `info` LEFT JOIN `positions` ON `positions`.`id` = `info`.`positions_id` LEFT JOIN `departments` ON `departments`.`id` = `positions`.`departments_id` LEFT JOIN `state_user` ON `state_user`.`users_id` = `info`.`users_id` where `state_user`.`state_user`=@state or `info`.`user_name`=@uname or `info`.`surname`=@fsname";
-
-                }
-
-
-                MySqlCommand command = new MySqlCommand(query, db.getConnection());
-                command.Parameters.Add("@state", MySqlDbType.VarChar).Value = state;
-                command.Parameters.Add("@uname", MySqlDbType.VarChar).Value = find_user;
-                command.Parameters.Add("@fsname", MySqlDbType.VarChar).Value = find_sname;
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-
-                var myData = table.Select();
-                if (myData.Length==0)
-                {
-                    MessageBox.Show("По вашему запросу ничего не найдено!!!");
-                }
-               
-               
-                                              
-                for (int i = 0; i < myData.Length; i++)
-                {
-                    string[] birthday = myData[i].ItemArray[3].ToString().Trim().Split(' ');
-                    dataGridView4.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(),
-                                                  myData[i].ItemArray[1].ToString().Trim(),
-                                                  birthday[0],
-                                                  myData[i].ItemArray[3].ToString().Trim(),
-                                                  myData[i].ItemArray[4].ToString().Trim(),
-                                                  myData[i].ItemArray[5].ToString().Trim(),
-                                                  myData[i].ItemArray[6].ToString().Trim(),
-                                                  myData[i].ItemArray[7].ToString().Trim());
-
-
-                }
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.ToString());
-                //           MessageBox.Show("Ошибка при загрузке данных!");
             }
         }
 
@@ -1003,6 +1036,7 @@ namespace MyBD
 
         }
 
+        [Obsolete]
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -1010,30 +1044,30 @@ namespace MyBD
 
 
 
-                dbmanager db = new dbmanager();
-
-
-                MySqlCommand command = new MySqlCommand(" UPDATE `otdel_kadr`.`info` SET `user_name` = @user_name, `surname` =  @surname, `birthday` = @birthday, `phone` = @phone, `email` = @email  WHERE `users_id` = @id", db.getConnection());
-                command.Parameters.Add("@user_name", MySqlDbType.VarChar).Value = textBox1.Text;
-                command.Parameters.Add("@surname", MySqlDbType.VarChar).Value = textBox2.Text;
-
-                string date = textBox3.Text;
-                DateTime time = DateTime.Parse(date);
-                command.Parameters.Add("@birthday", MySqlDbType.Date).Value = time;
-                command.Parameters.Add("@phone", MySqlDbType.VarChar).Value = textBox4.Text; ;
-                command.Parameters.Add("@email", MySqlDbType.VarChar).Value = textBox5.Text;
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(delete_users_id[delete_user - 1]);
-                db.openConnect();
-
-
-                if (command.ExecuteNonQuery() == 1)
+                using (SqlConnection cn = getConnection())
                 {
 
-                    MessageBox.Show("Все данные успешно обновлены!!!");
-                    
-                    db.closeConnect();
-                }
+                    SqlCommand command = new SqlCommand(" UPDATE info SET user_name = @user_name, surname =@surname, birthday = @birthday, phone = @phone, email = @email  WHERE users_id = @id", cn);
+                    command.Parameters.Add("@user_name", SqlDbType.VarChar).Value = textBox1.Text;
+                    command.Parameters.Add("@surname", SqlDbType.VarChar).Value = textBox2.Text;
 
+                    string date = textBox3.Text;
+                    DateTime time = DateTime.Parse(date);
+                    command.Parameters.Add("@birthday", SqlDbType.Date).Value = time;
+                    command.Parameters.Add("@phone", SqlDbType.VarChar).Value = textBox4.Text; ;
+                    command.Parameters.Add("@email", SqlDbType.VarChar).Value = textBox5.Text;
+                    command.Parameters.Add("@id", SqlDbType.Int).Value = Convert.ToInt32(delete_users_id[delete_user - 1]);
+
+                    cn.Open();
+
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        MessageBox.Show("Все данные успешно обновлены!!!");
+
+
+                    }
+                }
             }
             catch (Exception err)
             {

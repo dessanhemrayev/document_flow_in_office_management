@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -32,34 +33,47 @@ namespace MyBD
             panel3.Visible = true;
             panel4.Visible = false;
         }
-       
 
+
+
+        private SqlConnection getConnection()
+        {
+            return new  SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true"); 
+        }
+
+
+
+        [Obsolete]
         private void get_send_docs()
         {
             dataGridView1.Rows.Clear();
             try
             {
                 sends.Clear();
-                dbmanager db = new dbmanager();
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT `document`.`type_doc`, (select concat(`info`.`user_name`,' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`=`document`.`id_to_whom`), `document`.`date`,`document`.`id`,`document`.`id_to_whom`, `document`.`users_id` FROM `otdel_kadr`.`document` where `document`.`users_id`= @id", db.getConnection());
 
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
+                using (SqlConnection cn = getConnection()) {
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT [document].[type_doc], (select concat([info].[user_name],' ',[info].[surname])  from [otdel_kadr].[dbo].[info],[otdel_kadr].[dbo].[document]  where [info].[users_id]=[document].[id_to_whom]), [document].[date],[document].[id],[document].[id_to_whom], [document].[users_id] FROM [otdel_kadr].[dbo].[document] where [document].[users_id]=@id", cn);
+
+                    command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+                    var myData = table.Select();
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+                        dataGridView1.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
+                        sends.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
+
+                    }
+                }
                 //dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 //dataGridView1.RowTemplate.Height = 25;
                 //dataGridView1.AllowUserToAddRows = false;
                 //dataGridView1.DataSource = table;
-                var myData = table.Select();
+                
 
-                for (int i = 0; i < myData.Length; i++)
-                {
-                    dataGridView1.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
-                    sends.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
-
-                }
+                
             }
             catch (Exception)
             {
@@ -69,31 +83,34 @@ namespace MyBD
 
         }
 
+        [Obsolete]
         private void get_improve_docs()
         {
             dataGridView2.Rows.Clear();
             improves.Clear();
             try
             {
-                dbmanager db = new dbmanager();
-                DataTable table = new DataTable();
-                MySqlDataAdapter adapter = new MySqlDataAdapter();
-                MySqlCommand command = new MySqlCommand("SELECT  `document`.`type_doc`, (select concat(`info`.`user_name`, ' ',`info`.`surname`)  from `otdel_kadr`.`info` where `info`.`users_id`=`document`.`id_to_whom`), `document`.`date`, `document`.`id`  FROM `otdel_kadr`.`document` where `document`.`id_to_whom`= @id", db.getConnection());
-
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
-                adapter.SelectCommand = command;
-                adapter.Fill(table);
-                //dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                //dataGridView2.RowTemplate.Height = 25;
-                //dataGridView2.AllowUserToAddRows = false;
-                //dataGridView2.DataSource = table;
-                var myData = table.Select();
-
-                for (int i = 0; i < myData.Length; i++)
+                using (SqlConnection cn = getConnection())
                 {
-                    dataGridView2.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
-                    improves.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
+                    DataTable table = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    SqlCommand command = new SqlCommand("SELECT [document].[type_doc], (select concat([info].[user_name],' ',[info].[surname])  from [otdel_kadr].[dbo].[info],[otdel_kadr].[dbo].[document]  where [info].[users_id]=[document].[id_to_whom]), [document].[date],[document].[id],[document].[id_to_whom], [document].[users_id] FROM [otdel_kadr].[dbo].[document] where [document].[id_to_whom]= @id", cn);
 
+                    command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(idlik.get_idUser());
+                    adapter.SelectCommand = command;
+                    adapter.Fill(table);
+                    //dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                    //dataGridView2.RowTemplate.Height = 25;
+                    //dataGridView2.AllowUserToAddRows = false;
+                    //dataGridView2.DataSource = table;
+                    var myData = table.Select();
+
+                    for (int i = 0; i < myData.Length; i++)
+                    {
+                        dataGridView2.Rows.Add(i + 1, myData[i].ItemArray[0].ToString().Trim(), myData[i].ItemArray[1].ToString().Trim(), myData[i].ItemArray[2].ToString().Trim());
+                        improves.Add(Convert.ToInt32(myData[i].ItemArray[3].ToString()));
+
+                    }
                 }
 
             }
@@ -262,18 +279,31 @@ namespace MyBD
 
             try
             {
-              
+                string message = "Вы хотите скачать этот файл?";
+                const string caption = "Скачать документ";
+                var result = MessageBox.Show(message, caption,
+                                             MessageBoxButtons.YesNo,
+                                             MessageBoxIcon.Question);
 
-                preparing_the_script(id);
+                // If the no button was pressed ...
+                if (result == DialogResult.Yes)
+                {
+                    preparing_the_script(id);
 
-                string str1 = await Task.Run(() => { return 
-                    this.getOutput("C://Users//dessa//AppData//Local//Programs//Python//Python38-32//python.exe", 
-                    "D://document_flow_in_office_management/MyBD/scripts/write2.py"); });
-               
+                    string str1 = await Task.Run(() => {
+                        return
+this.getOutput("C://Users//dessa//AppData//Local//Programs//Python//Python38-32//python.exe",
+"D://document_flow_in_office_management/MyBD/scripts/write2.py");
+                    });
 
-                File.Delete(@"D://document_flow_in_office_management//MyBD//scripts//write2.py");
 
-                MessageBox.Show(str1);
+                    File.Delete(@"D://document_flow_in_office_management//MyBD//scripts//write2.py");
+
+                    MessageBox.Show(str1);
+                }
+
+
+                
 
 
 

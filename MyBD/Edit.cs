@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -20,35 +21,44 @@ namespace MyBD
         }
         class_for_id_user id = new class_for_id_user();
         info Iinfo = new info();
+
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
+
+        [Obsolete]
         private void button1_Click(object sender, EventArgs e)
         {
             try
             {
-               
-                
 
-                dbmanager db = new dbmanager();
-                
 
-                MySqlCommand command = new MySqlCommand(" UPDATE `otdel_kadr`.`info` SET `user_name` = @user_name, `surname` =  @surname, `birthday` = @birthday, `phone` = @phone, `email` = @email  WHERE `users_id` = @id", db.getConnection());
-                command.Parameters.Add("@user_name", MySqlDbType.VarChar).Value =  name_user.Text;
-                command.Parameters.Add("@surname", MySqlDbType.VarChar).Value = surname_user.Text;
-                command.Parameters.Add("@birthday", MySqlDbType.Date).Value = dateTimePicker1.Value;
-                command.Parameters.Add("@phone", MySqlDbType.VarChar).Value = phone.Text;;
-                command.Parameters.Add("@email", MySqlDbType.VarChar).Value = email.Text;
-                command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(id.get_idUser());
-                db.openConnect();
-              
 
-                if (command.ExecuteNonQuery()==1)
+                using (SqlConnection cn = getConnection())
                 {
 
-                    MessageBox.Show("Все данные успешно обновлены!!!");
-                    this.Hide();
-                    Iinfo.Show();
-                    db.closeConnect();
-                }
 
+                    SqlCommand command = new SqlCommand(" UPDATE info SET [user_name] = @user_name, [surname] =  @surname, [birthday] = @birthday, [phone] = @phone, [email] = @email  WHERE [users_id]= @id", cn);
+                    command.Parameters.Add("@user_name", SqlDbType.VarChar).Value = name_user.Text;
+                    command.Parameters.Add("@surname", SqlDbType.VarChar).Value = surname_user.Text;
+                    command.Parameters.Add("@birthday", SqlDbType.Date).Value = dateTimePicker1.Value;
+                    command.Parameters.Add("@phone", SqlDbType.VarChar).Value = phone.Text; ;
+                    command.Parameters.Add("@email", SqlDbType.VarChar).Value = email.Text;
+                    command.Parameters.Add("@id", SqlDbType.Int).Value = Convert.ToInt32(id.get_idUser());
+
+                    cn.Open();
+
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+
+                        MessageBox.Show("Все данные успешно обновлены!!!");
+                        this.Hide();
+                        Iinfo.Show();
+
+                    }
+
+                }
             }
             catch (Exception err)
             {

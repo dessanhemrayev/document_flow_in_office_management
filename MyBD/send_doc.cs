@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -20,7 +21,10 @@ namespace MyBD
         
 
         List<int> to_whom_ids = new List<int>();
-
+        private SqlConnection getConnection()
+        {
+            return new SqlConnection(@"Data Source=DESSAN-LAPTOP\SQLEXPRESS; Database=otdel_kadr; Integrated Security=true");
+        }
         public send_doc()
         {
             InitializeComponent();
@@ -33,27 +37,28 @@ namespace MyBD
         private void get_users()
         {
 
-            dbmanager db = new dbmanager();
-
-            DataTable table = new DataTable();
-
-            MySqlDataAdapter adapter = new MySqlDataAdapter();
-
-            MySqlCommand command = new MySqlCommand("SELECT `info`.`users_id`,   concat( `info`.`user_name` ,' ',  `info`.`surname`)FROM `otdel_kadr`.`info`,`otdel_kadr`.`users` where `info`.`users_id` =`users`.`id` and `users`.`access right`=2   ", db.getConnection());
-           // command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(id.get_idUser());
-
-            adapter.SelectCommand = command;
-            adapter.Fill(table);
-            var myData = table.Select();
-
-            for (int i = 0; i < myData.Length; i++)
+            using (SqlConnection cn = getConnection())
             {
 
-                comboBox2.Items.Add(myData[i].ItemArray[1]);
-                to_whom_ids.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+                DataTable table = new DataTable();
 
+                SqlDataAdapter adapter = new SqlDataAdapter();
+
+                SqlCommand command = new SqlCommand("SELECT DISTINCT[info].[users_id], concat([info].[user_name], ' ',[info].[surname]) FROM[info],[users] where[access right] = 2 and[info].[users_id] =[users].[id]; ", cn);
+                // command.Parameters.Add("@id", MySqlDbType.Int32).Value = Convert.ToInt32(id.get_idUser());
+
+                adapter.SelectCommand = command;
+                adapter.Fill(table);
+                var myData = table.Select();
+
+                for (int i = 0; i < myData.Length; i++)
+                {
+
+                    comboBox2.Items.Add(myData[i].ItemArray[1]);
+                    to_whom_ids.Add(Convert.ToInt32(myData[i].ItemArray[0]));
+
+                }
             }
-
        }
 
 

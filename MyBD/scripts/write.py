@@ -1,5 +1,5 @@
-import mysql.connector
-from mysql.connector import Error
+import pyodbc
+from pyodbc import Error
 import os
 def write_file(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
@@ -10,19 +10,13 @@ def write_file(data, filename):
 def readBLOB(emp_id ):
     
     try:
-        connection = mysql.connector.connect(host='localhost',
-                                             port='33306',
-                                             database='otdel_kadr',
-                                             user='root',
-                                             password='')
-                                             
-
+        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};" "Server=DESSAN-LAPTOP\SQLEXPRESS;""Database=otdel_kadr;"                  "Trusted_Connection=yes;")
         cursor = connection.cursor()
 
 
         name="D:\\Downloads\\"
       
-        sql_fetch_blob_query =  "SELECT `type_doc`, `format_doc`, `document`, `date` FROM `document` WHERE id=%s"
+        sql_fetch_blob_query =  "SELECT type_doc, format_doc, document, date FROM document WHERE id=?"
 
         cursor.execute(sql_fetch_blob_query,(emp_id,))
         myresults =cursor.fetchall()
@@ -34,7 +28,7 @@ def readBLOB(emp_id ):
             print("Документ успешно скачан в папку D:\\Downloads")
     
 
-    except mysql.connector.Error as error:
+    except Error as error:
         print("Failed to read BLOB data from MySQL table {}".format(error))
 
     finally:
@@ -46,11 +40,8 @@ def readBLOB(emp_id ):
 def readBLOB2(emp_id ):
     
     try:
-        connection = mysql.connector.connect(host='localhost',
-                                             port='33306',
-                                             database='otdel_kadr',
-                                             user='root',
-                                             password='')
+        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};" "Server=DESSAN-LAPTOP\SQLEXPRESS;""Database=otdel_kadr;"                  "Trusted_Connection=yes;")
+        cursor = connection.cursor()
                                              
 
         cursor = connection.cursor()
@@ -58,7 +49,7 @@ def readBLOB2(emp_id ):
 
         name="D:\\Downloads\\"
       
-        sql_fetch_blob_query =  "SELECT  `name_doc`, `format_doc`, `date`, `doc`, (select concat(`info`.`user_name`, ' ',`info`.`surname`) from `otdel_kadr`.`info` where `info`.`users_id`=`prikazy`.`for_user_id`) FROM `prikazy` WHERE id=%s"
+        sql_fetch_blob_query =  "SELECT  name_doc, format_doc, date, doc, (select concat([info].user_name, ' ',[info].[surname]) from info where [info].[users_id]=[prikazy].[users_id]) FROM prikazy WHERE id=?"
 
         cursor.execute(sql_fetch_blob_query,(emp_id,))
         myresults =cursor.fetchall()
@@ -70,11 +61,11 @@ def readBLOB2(emp_id ):
             print("Документ успешно скачан в папку D:\\Downloads")
     
 
-    except mysql.connector.Error as error:
+    except Error as error:
         print("Failed to read BLOB data from MySQL table {}".format(error))
 
     finally:
-        if (connection.is_connected()):
+        if (connection):
             cursor.close()
             connection.close()            
 
@@ -95,3 +86,4 @@ if __name__ == "__main__":
     except OSError as error:
         print(error)  
     finally:
+        

@@ -1,5 +1,5 @@
-import mysql.connector
-from mysql.connector import Error
+import pyodbc
+from pyodbc import Error 
 
 def convertToBinaryData(filename):
     # Convert digital data to binary format
@@ -10,16 +10,17 @@ def convertToBinaryData(filename):
 def insertBLOB(type_doc,format_doc, document, date, id_to_whom,users_id):
     
     try:
-        connection = mysql.connector.connect(host='localhost',
-                                             port='33306',
-                                             database='otdel_kadr',
-                                             user='root',
-                                             password='')
+        #connection = mysql.connector.connect(host='localhost',  port='33306',     database='otdel_kadr',     user='root',    password='')
                                              
+
+        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                      "Server=DESSAN-LAPTOP\SQLEXPRESS;"
+                      "Database=otdel_kadr;"
+                      "Trusted_Connection=yes;")
 
         cursor = connection.cursor()
         sql_insert_blob_query = """ INSERT INTO document
-                          (type_doc,format_doc,document, date, id_to_whom,users_id) VALUES (%s,%s,%s,%s,%s,%s)"""
+                          (type_doc,format_doc,document, date, id_to_whom,users_id) VALUES (?,?,?,?,?,?)"""
 
        
         file1 = convertToBinaryData(document)
@@ -30,44 +31,42 @@ def insertBLOB(type_doc,format_doc, document, date, id_to_whom,users_id):
         connection.commit()
         print("Загрузка данных прошла успешно")
 
-    except mysql.connector.Error as error:
+    except Error as error:
         print("Failed inserting BLOB data into MySQL table {}".format(error))
 
     finally:
-        if (connection.is_connected()):
+        if (connection):
             cursor.close()
             connection.close()
-            #print("MySQL connection is closed")
+            #print("SQL connection is closed")
 def insertBLOB2(name_doc,  date,document,users_id):
     
     try:
-        connection = mysql.connector.connect(host='localhost',
-                                             port='33306',
-                                             database='otdel_kadr',
-                                             user='root',
-                                             password='')
+        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                      "Server=DESSAN-LAPTOP\SQLEXPRESS;"
+                      "Database=otdel_kadr;"
+                      "Trusted_Connection=yes;")
                                              
 
         cursor = connection.cursor()
-        sql_insert_blob_query = """ INSERT INTO prikazy
-                          (name_doc,date,doc,users_id) VALUES (%s,%s,%s,%s)"""
+        sql_insert_blob_query = """ INSERT INTO prikazy(name_doc,format_doc,date ,doc,users_id) VALUES (?,?,?,?,?)"""
 
        
         file1 = convertToBinaryData(document)
         
         # Convert data into tuple format
-        insert_blob_tuple = (name_doc,date, file1,users_id)
+        insert_blob_tuple = (name_doc,"rtf",date,file1,users_id)
         result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
         connection.commit()
         print("Приказ успешно создан и загружен в базу данных")
 
-    except mysql.connector.Error as error:
-        print("Failed inserting BLOB data into MySQL table {}".format(error))
+    except Error as error:
+        print("Failed inserting BLOB data into SQL table {}".format(error))
 
     finally:
-        if (connection.is_connected()):
+        if (connection):
             cursor.close()
             connection.close()
             #print("MySQL connection is closed")
 if __name__ == "__main__":
-    #insertBLOB("Заявление","pdf",f"C:\\Users\\dessa\\Downloads\\Doc1.docx","18.11.2020",2,1)
+    
