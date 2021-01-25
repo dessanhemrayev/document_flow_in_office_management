@@ -10,7 +10,7 @@ def write_file(data, filename):
 def readBLOB(emp_id ):
     
     try:
-        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};" "Server=DESSAN-LAPTOP\SQLEXPRESS;""Database=otdel_kadr;"                  "Trusted_Connection=yes;")
+        connection=pyodbc.connect("Driver={SQL Server Native Client 11.0};" "Server=DESSAN-LAPTOP\SQLEXPRESS;""Database=otdel_kadr;" "Trusted_Connection=yes;")
         cursor = connection.cursor()
 
 
