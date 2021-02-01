@@ -36,8 +36,8 @@ namespace MyBD
                     DataTable table = new DataTable();
                     SqlDataAdapter adapter = new SqlDataAdapter();
                     SqlCommand command = new SqlCommand("SELECT * FROM users where user_login = @login AND user_password=@password ", cn);
-                    command.Parameters.Add("@login", MySqlDbType.VarChar).Value = login.Text;
-                    command.Parameters.Add("@password", MySqlDbType.VarChar).Value = password.Text;
+                    command.Parameters.Add("@login", SqlDbType.VarChar).Value = login.Text;
+                    command.Parameters.Add("@password", SqlDbType.VarChar).Value = password.Text;
                     adapter.SelectCommand = command;
                     adapter.Fill(table);
                     var myData = table.Select();
